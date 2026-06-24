@@ -1,0 +1,15 @@
+# Claude Code config (do not publish)
+.claude/
+# Build artifact / archive
+*.zip
+# Lighthouse reports & scratch (local only)
+.lh/
+# Headless browser profile used for local audits
+.edgeprofile/
+# Full-resolution image masters (web-optimized webp ship in images/)
+images/originals/
+# Misc
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

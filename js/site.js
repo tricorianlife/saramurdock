@@ -1,23 +1,26 @@
 /* Sara Murdock — shared site chrome + behaviour
-   Injects the header and footer on every page (single source of truth),
-   highlights the active nav item from <body data-page="...">, then wires
-   the sticky header, mobile menu, scroll-reveal and footer year. */
+   Injects a minimal header and a colophon footer on every page (single
+   source of truth), highlights the active nav item from <body data-page>,
+   then wires the sticky header, mobile menu, scroll-reveal and footer year.
+   Editorial pass: no atmosphere/grain/vignette, no magnetic buttons. */
 (function () {
   var page = document.body.getAttribute('data-page') || '';
 
-  var nav = [
+  var pages = [
     ['about', 'about.html', 'About'],
     ['portfolio', 'portfolio.html', 'Portfolio'],
     ['services', 'services.html', 'Services'],
     ['blog', 'blog.html', 'Blog'],
     ['contact', 'contact.html', 'Contact']
-  ].map(function (n) {
+  ];
+
+  var nav = pages.map(function (n) {
     return '<li><a href="' + n[1] + '"' + (page === n[0] ? ' class="active"' : '') + '>' + n[2] + '</a></li>';
   }).join('');
 
   var header =
     '<header id="site-header"><nav>' +
-      '<a href="saramurdock.html" class="brand"><span class="dot"></span>Sara Murdock</a>' +
+      '<a href="saramurdock.html" class="brand">Sara Murdock</a>' +
       '<ul class="navlinks">' + nav + '</ul>' +
       '<a href="book-online.html" class="nav-cta">Book online</a>' +
       '<button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">' +
@@ -33,25 +36,32 @@
     '<a href="https://x.com/SaraM35813" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24"><path d="M18.24 2.25h3.31l-7.23 8.26L22.5 21.75h-6.56l-5.14-6.72-5.88 6.72H1.6l7.73-8.84L1.5 2.25h6.73l4.65 6.15 5.36-6.15Zm-1.16 17.52h1.83L7.01 4.13H5.04l12.04 15.64Z"/></svg></a>' +
     '<a href="https://www.youtube.com/@Sara.Murdock" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.5a3 3 0 0 0-2.1-2.1C19.5 3.9 12 3.9 12 3.9s-7.5 0-9.4.5A3 3 0 0 0 .5 6.5 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.5 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.5ZM9.6 15.6V8.4l6.2 3.6-6.2 3.6Z"/></svg></a>';
 
+  var footExplore = pages.concat([['book', 'book-online.html', 'Book online']]).map(function (n) {
+    return '<li><a href="' + n[1] + '">' + n[2] + '</a></li>';
+  }).join('');
+
   var footer =
-    '<footer><div class="wrap foot-grid">' +
-      '<a href="saramurdock.html" class="brand"><span class="dot"></span>Sara Murdock</a>' +
-      '<div class="socials">' + social + '</div>' +
-      '<div class="copy">&copy; <span id="yr"></span> Sara Murdock. All rights reserved.</div>' +
+    '<footer><div class="wrap">' +
+      '<div class="foot-grid">' +
+        '<div class="foot-brand">' +
+          '<a href="saramurdock.html" class="brand">Sara Murdock</a>' +
+          '<p class="foot-desc">Award-winning community pharmacist, advocate and speaker — patient-first care and a national push for more women to lead in pharmacy.</p>' +
+          '<div class="foot-status"><span class="live">&bull;</span> Available for speaking, mentoring &amp; media<br>Melbourne, Australia</div>' +
+        '</div>' +
+        '<div class="foot-col"><p class="foot-h">Explore</p><ul>' + footExplore + '</ul></div>' +
+        '<div class="foot-col"><p class="foot-h">Connect</p>' +
+          '<div class="socials">' + social + '</div>' +
+          '<ul style="margin-top:20px"><li><a href="mailto:contact@saramurdock.com">contact@saramurdock.com</a></li></ul>' +
+        '</div>' +
+      '</div>' +
+      '<div class="foot-base">' +
+        '<div class="copy">&copy; <span id="yr"></span> Sara Murdock. All rights reserved.</div>' +
+        '<div class="mark">Empowering through stories &amp; leadership</div>' +
+      '</div>' +
     '</div></footer>';
 
   document.body.insertAdjacentHTML('afterbegin', header);
   document.body.insertAdjacentHTML('beforeend', footer);
-
-  // Cinematic chrome — atmosphere, grain, vignette, scroll-progress.
-  // Skipped when the page already embeds it inline (e.g. the home page).
-  if (!document.querySelector('.cine-progress')) {
-    document.body.insertAdjacentHTML('afterbegin',
-      '<div class="cine-progress" aria-hidden="true"></div>' +
-      '<div class="atmo" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span></div>' +
-      '<div class="grain" aria-hidden="true"></div>' +
-      '<div class="vignette" aria-hidden="true"></div>');
-  }
 
   // Footer year
   var yr = document.getElementById('yr');
@@ -77,7 +87,7 @@
     });
   }
 
-  // Scroll reveal
+  // Scroll reveal (quiet fade-up)
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
@@ -112,17 +122,5 @@
       es.forEach(function (en) { if (en.isIntersecting) { run(en.target); cio.unobserve(en.target); } });
     }, { threshold: 0.5 });
     nums.forEach(function (n) { cio.observe(n); });
-  }
-
-  // Magnetic CTAs (fine pointer + motion allowed)
-  if (!reduce && matchMedia('(hover:hover) and (pointer:fine)').matches) {
-    document.querySelectorAll('.btn, .mag').forEach(function (el) {
-      el.style.transition = 'transform .25s cubic-bezier(.16,1,.3,1)';
-      el.addEventListener('pointermove', function (e) {
-        var r = el.getBoundingClientRect();
-        el.style.transform = 'translate(' + ((e.clientX - r.left - r.width / 2) * 0.2) + 'px,' + ((e.clientY - r.top - r.height / 2) * 0.28) + 'px)';
-      });
-      el.addEventListener('pointerleave', function () { el.style.transform = ''; });
-    });
   }
 })();
